@@ -1,0 +1,236 @@
+AI Photo Detective v1 is a proof of concept system designed to compare, contrast, and detect the presence of AI-generated elements in photos, videos, and voice recordings. Using advanced artificial intelligence algorithms, the system analyzes media content and identifies potential indicators of AI generation. By examining various visual and auditory characteristics, the AI Photo Detective can provide insights into whether a particular image, video, or voice recording contains AI-generated components.
+
+This proof of concept lays the foundation for future improvements and enhancements to the system. The goal is to further refine the algorithms, expand the detection capabilities, and provide a more comprehensive and accurate analysis of media content. By continuously improving the AI Photo Detective, we aim to empower users to identify and understand the influence of AI technology in digital media, promoting transparency and informed decision-making.
+
+
+AI Photo Detective v1 
+----------------------------------------
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Comparison</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="script.js"></script>
+    <style>
+        #imageContainer {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        img {
+            max-width: 400px;
+            max-height: 400px;
+            margin: 10px;
+        }
+        #graphContainer {
+            width: 800px;
+            height: 400px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Comparison</h1>
+    <input type="file" id="aiImageInput" accept="image/*">
+    <input type="file" id="normalImageInput" accept="image/*">
+    <button onclick="compareImages()">Compare Images</button>
+
+    <div id="imageContainer">
+        <!-- Display the uploaded images here -->
+    </div>
+
+    <div id="graphContainer">
+        <!-- Display the graph here -->
+    </div>
+</body>
+</html>
+---------------------------------------------------------
+function compareImages() {
+    const aiImageInput = document.getElementById('aiImageInput');
+    const normalImageInput = document.getElementById('normalImageInput');
+
+    const aiImage = aiImageInput.files[0];
+    const normalImage = normalImageInput.files[0];
+
+    if (aiImage && normalImage) {
+        const aiImageURL = URL.createObjectURL(aiImage);
+        const normalImageURL = URL.createObjectURL(normalImage);
+
+        const imageContainer = document.getElementById('imageContainer');
+        imageContainer.innerHTML = `
+            <img src="${aiImageURL}" alt="AI Image">
+            <img src="${normalImageURL}" alt="Normal Image">
+        `;
+
+        // Create canvas elements to draw and compare the images
+        const canvasAI = document.createElement('canvas');
+        const canvasNormal = document.createElement('canvas');
+        const contextAI = canvasAI.getContext('2d');
+        const contextNormal = canvasNormal.getContext('2d');
+
+        const imgAI = new Image();
+        const imgNormal = new Image();
+
+        imgAI.onload = () => {
+            canvasAI.width = imgAI.width;
+            canvasAI.height = imgAI.height;
+            contextAI.drawImage(imgAI, 0, 0);
+
+            imgNormal.onload = () => {
+                canvasNormal.width = imgNormal.width;
+                canvasNormal.height = imgNormal.height;
+                contextNormal.drawImage(imgNormal, 0, 0);
+
+                const imageDataAI = contextAI.getImageData(0, 0, canvasAI.width, canvasAI.height).data;
+                const imageDataNormal = contextNormal.getImageData(0, 0, canvasNormal.width, canvasNormal.height).data;
+
+                const diffData = calculateImageDifference(imageDataAI, imageDataNormal, canvasAI.width, canvasAI.height);
+
+                drawDifferenceGraph(diffData);
+            };
+
+            imgNormal.src = normalImageURL;
+        };
+
+        imgAI.src = aiImageURL;
+    }
+}
+
+function calculateImageDifference(imageDataAI, imageDataNormal, width, height) {
+    const diffData = [];
+
+    for (let i = 0; i < width * height * 4; i += 4) {
+        const diffR = Math.abs(imageDataAI[i] - imageDataNormal[i]);
+        const diffG = Math.abs(imageDataAI[i + 1] - imageDataNormal[i + 1]);
+        const diffB = Math.abs(imageDataAI[i + 2] - imageDataNormal[i + 2]);
+
+        // Calculate the overall difference as the average of RGB differences
+        const diff = (diffR + diffG + diffB) / 3;
+
+        diffData.push(diff);
+    }
+
+    return diffData;
+}
+
+function drawDifferenceGraph(diffData) {
+    const graphContainer = document.getElementById('graphContainer');
+
+    const trace = {
+        x: Array.from({ length: diffData.length }, (_, i) => i),
+        y: diffData,
+        type: 'scatter',
+        mode: 'lines',
+        line: {
+            color: 'rgb(31, 119, 180)',
+            width: 2
+        }
+    };
+
+    const layout = {
+        title: 'Image Difference',
+        xaxis: {
+            title: 'Pixel Index'
+        },
+        yaxis: {
+            title: 'Difference'
+        },
+        margin: {
+            l: 50,
+            r: 50,
+            t: 50,
+            b: 50
+        }
+    };
+
+    Plotly.newPlot(graphContainer, [trace], layout);
+}
+
+
+---------------------------------------------------------------------------
+
+PHOTO AND VOICE COMPARE
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image and Voice Comparison</title>
+    <script src="script.js"></script>
+    <style>
+        #imageContainer {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        img {
+            max-width: 400px;
+            max-height: 400px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Comparison</h1>
+    <input type="file" id="aiImageInput" accept="image/*">
+    <input type="file" id="normalImageInput" accept="image/*">
+    <button onclick="compareImages()">Compare Images</button>
+
+    <h1>Voice Comparison</h1>
+    <input type="file" id="aiVoiceInput" accept="audio/*">
+    <input type="file" id="humanVoiceInput" accept="audio/*">
+    <button onclick="compareVoices()">Compare Voices</button>
+
+    <div id="imageContainer">
+        <!-- Display the uploaded images here -->
+    </div>
+
+    <div id="voiceContainer">
+        <!-- Display the uploaded audio here -->
+    </div>
+</body>
+</html>
+--------------------------------------------------------------------------------
+function compareImages() {
+    const aiImageInput = document.getElementById('aiImageInput');
+    const normalImageInput = document.getElementById('normalImageInput');
+
+    const aiImage = aiImageInput.files[0];
+    const normalImage = normalImageInput.files[0];
+
+    if (aiImage && normalImage) {
+        const aiImageURL = URL.createObjectURL(aiImage);
+        const normalImageURL = URL.createObjectURL(normalImage);
+
+        const imageContainer = document.getElementById('imageContainer');
+        imageContainer.innerHTML = `
+            <img src="${aiImageURL}" alt="AI Image">
+            <img src="${normalImageURL}" alt="Normal Image">
+        `;
+    }
+}
+
+function compareVoices() {
+    const aiVoiceInput = document.getElementById('aiVoiceInput');
+    const humanVoiceInput = document.getElementById('humanVoiceInput');
+
+    const aiVoice = aiVoiceInput.files[0];
+    const humanVoice = humanVoiceInput.files[0];
+
+    if (aiVoice && humanVoice) {
+        const aiVoiceURL = URL.createObjectURL(aiVoice);
+        const humanVoiceURL = URL.createObjectURL(humanVoice);
+
+        const voiceContainer = document.getElementById('voiceContainer');
+        voiceContainer.innerHTML = `
+            <audio controls>
+                <source src="${aiVoiceURL}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <audio controls>
+                <source src="${humanVoiceURL}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        `;
+    }
+}
