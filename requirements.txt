@@ -1,0 +1,3 @@
+Pillow: Required for image processing, specifically for opening and resizing images.
+tensorflow: Required for machine learning functionality, specifically for loading and using pre-trained models.
+halo: Required for displaying spinner/loading animations in the command line interface.
