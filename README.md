@@ -38,14 +38,13 @@ Navigate to the project directory:
 cd AIDetectivev1
 Install dependencies:
 
-bash
-Copy code
-pip install -r requirements.txt
+
+```pip install -r requirements.txt```
 Usage
 Run the script with the following command:
 
 
-python AI-Detective.py /path/to/input/images /path/to/output/results.csv
+```python AI-Detective.py /path/to/input/images /path/to/output/results.csv```
 Replace /path/to/input/images with the directory containing your input images and /path/to/output/results.csv with the desired output file path.
 
 Contributing
